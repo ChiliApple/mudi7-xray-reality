@@ -1,23 +1,24 @@
 #!/bin/sh
-# xray-off — Tunnel AUS: Regeln + Routing entfernen, Xray stoppen.
-# Fail-safe: danach geht der Traffic ganz normal direkt raus.
-MARK=0x1
-TABLE=100
+# xray-off — Tunnel AUS: Routing + tun0 weg, Dienste stoppen. Fail-safe.
+TUN=tun0
+TABLE=200
+LAN_IF=br-lan
 
-# Auto-Revert-Timer abbrechen (falls aktiv)
 [ -f /tmp/xray-revert.pid ] && kill "$(cat /tmp/xray-revert.pid)" 2>/dev/null
 rm -f /tmp/xray-revert.pid
 
-# nftables-Tabelle entfernen
+LAN_NET="$(ip -4 route show dev "$LAN_IF" proto kernel scope link 2>/dev/null | awk '{print $1}' | head -1)"
+[ -n "$LAN_NET" ] && ip rule del from "$LAN_NET" lookup "$TABLE" pref 200 2>/dev/null
+[ -n "$LAN_NET" ] && ip rule del to "$LAN_NET" lookup main pref 100 2>/dev/null
+ip route flush table "$TABLE" 2>/dev/null
+ip link set dev "$TUN" down 2>/dev/null
+ip tuntap del mode tun dev "$TUN" 2>/dev/null
+
+# evtl. Altlasten aus TPROXY-Versuchen
 nft delete table inet xray 2>/dev/null
+ip rule del fwmark 0x1 lookup 100 2>/dev/null
+ip route flush table 100 2>/dev/null
 
-# Policy-Routing entfernen
-ip rule del fwmark $MARK lookup $TABLE pref 100 2>/dev/null
-ip rule del fwmark $MARK lookup $TABLE 2>/dev/null
-ip route flush table $TABLE 2>/dev/null
-
-# Xray stoppen + Autostart aus (Default: nicht permanent)
-/etc/init.d/xray stop 2>/dev/null
-/etc/init.d/xray disable 2>/dev/null
-
+/etc/init.d/tun2socks stop 2>/dev/null; /etc/init.d/tun2socks disable 2>/dev/null
+/etc/init.d/xray stop 2>/dev/null; /etc/init.d/xray disable 2>/dev/null
 echo "xray-off: Tunnel AUS, Traffic direkt (fail-safe)."
