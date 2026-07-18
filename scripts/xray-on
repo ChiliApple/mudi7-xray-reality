@@ -17,6 +17,7 @@ LAN_NET="$(ip -4 route show dev "$LAN_IF" proto kernel scope link 2>/dev/null | 
 ip tuntap add mode tun dev "$TUN" 2>/dev/null
 ip addr add "$TUN_ADDR" dev "$TUN" 2>/dev/null
 ip link set dev "$TUN" up
+ip link set dev "$TUN" mtu 1280
 
 # Dienste
 /etc/init.d/xray stop 2>/dev/null; /etc/init.d/xray start
