@@ -34,17 +34,17 @@ table inet xray {
         type filter hook prerouting priority mangle; policy accept;
 
         # Etablierte transparente Sockets direkt annehmen (noetig fuer TCP-Reply-Pakete)
-        meta l4proto { tcp, udp } socket transparent 1 meta mark set 0x1 accept
+        meta l4proto { tcp, udp } socket transparent 1 counter meta mark set 0x1 accept
 
         # Alles an den Router selbst -> niemals tproxyen (schuetzt SSH/DNS/Xray-Rueckweg)
-        fib daddr type local return
+        fib daddr type local counter return
 
         # Private/reservierte Netze + Server-IP -> direkt
-        ip daddr @bypass4 return
+        ip daddr @bypass4 counter return
 
         # Rest: an lokalen Xray-TPROXY-Port umleiten
-        meta l4proto tcp meta mark set 0x1 tproxy ip to 127.0.0.1:12345 accept
-        meta l4proto udp meta mark set 0x1 tproxy ip to 127.0.0.1:12345 accept
+        meta l4proto tcp counter meta mark set 0x1 tproxy ip to 127.0.0.1:12345 accept
+        meta l4proto udp counter meta mark set 0x1 tproxy ip to 127.0.0.1:12345 accept
     }
 
     chain prerouting6 {

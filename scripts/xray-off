@@ -12,6 +12,7 @@ rm -f /tmp/xray-revert.pid
 nft delete table inet xray 2>/dev/null
 
 # Policy-Routing entfernen
+ip rule del fwmark $MARK lookup $TABLE pref 100 2>/dev/null
 ip rule del fwmark $MARK lookup $TABLE 2>/dev/null
 ip route flush table $TABLE 2>/dev/null
 

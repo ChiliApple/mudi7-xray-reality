@@ -14,11 +14,11 @@ TABLE=100
 [ -f "$NFT" ] || { echo "xray-on: $NFT fehlt -> erst 'sh scripts/setup-tproxy.sh'"; exit 1; }
 
 # Xray starten (ohne enable -> bleibt nach Reboot aus = 'nicht permanent')
-/etc/init.d/xray restart
+/etc/init.d/xray stop 2>/dev/null; /etc/init.d/xray start
 
 # Policy-Routing (idempotent): markierte Pakete lokal zustellen
 ip rule del fwmark $MARK lookup $TABLE 2>/dev/null
-ip rule add fwmark $MARK lookup $TABLE
+ip rule add fwmark $MARK lookup $TABLE pref 100
 ip route replace local default dev lo table $TABLE
 
 # nftables laden (eigene Tabelle; fw4 bleibt unangetastet). Atomar: alles oder nichts.
