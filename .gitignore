@@ -1,0 +1,6 @@
+# NIEMALS Secrets ins Repo!
+secrets.env
+/etc/xray/secrets.env
+*.log
+*.zip
+*.dgst
