@@ -1,0 +1,9 @@
+#!/bin/sh
+# xray-confirm — Auto-Revert abbrechen, Tunnel dauerhaft an lassen (bis 'xray-off').
+if [ -f /tmp/xray-revert.pid ]; then
+    kill "$(cat /tmp/xray-revert.pid)" 2>/dev/null
+    rm -f /tmp/xray-revert.pid
+    echo "xray-confirm: Auto-Revert abgebrochen. Tunnel bleibt aktiv."
+else
+    echo "xray-confirm: kein Auto-Revert-Timer aktiv (Tunnel laeuft bereits dauerhaft oder ist aus)."
+fi

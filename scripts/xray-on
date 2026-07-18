@@ -1,0 +1,38 @@
+#!/bin/sh
+# xray-on — Tunnel EIN: Xray starten + TPROXY-Regeln + Policy-Routing.
+#
+# Schaltet nach AUTOREVERT Sekunden automatisch zurueck (fail-safe), ausser
+# 'xray-confirm' wird vorher ausgefuehrt. So heilt ein versehentlicher Lockout
+# von selbst.
+set -u
+
+AUTOREVERT=180
+NFT=/etc/xray/xray-tproxy.nft
+MARK=0x1
+TABLE=100
+
+[ -f "$NFT" ] || { echo "xray-on: $NFT fehlt -> erst 'sh scripts/setup-tproxy.sh'"; exit 1; }
+
+# Xray starten (ohne enable -> bleibt nach Reboot aus = 'nicht permanent')
+/etc/init.d/xray restart
+
+# Policy-Routing (idempotent): markierte Pakete lokal zustellen
+ip rule del fwmark $MARK lookup $TABLE 2>/dev/null
+ip rule add fwmark $MARK lookup $TABLE
+ip route replace local default dev lo table $TABLE
+
+# nftables laden (eigene Tabelle; fw4 bleibt unangetastet). Atomar: alles oder nichts.
+nft delete table inet xray 2>/dev/null
+if ! nft -f "$NFT"; then
+    echo "xray-on: nft-Laden fehlgeschlagen -> Rollback."
+    /usr/sbin/xray-off
+    exit 1
+fi
+
+# Auto-Revert-Timer scharf schalten
+[ -f /tmp/xray-revert.pid ] && kill "$(cat /tmp/xray-revert.pid)" 2>/dev/null
+( sleep "$AUTOREVERT" && /usr/sbin/xray-off >/tmp/xray-autorevert.log 2>&1 ) &
+echo $! > /tmp/xray-revert.pid
+
+echo "xray-on: Tunnel AKTIV (LAN-Client-Traffic -> REALITY)."
+echo ">>> Auto-Revert in ${AUTOREVERT}s. Wenn alles laeuft: 'xray-confirm' ausfuehren."

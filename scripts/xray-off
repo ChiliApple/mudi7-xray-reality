@@ -1,0 +1,22 @@
+#!/bin/sh
+# xray-off — Tunnel AUS: Regeln + Routing entfernen, Xray stoppen.
+# Fail-safe: danach geht der Traffic ganz normal direkt raus.
+MARK=0x1
+TABLE=100
+
+# Auto-Revert-Timer abbrechen (falls aktiv)
+[ -f /tmp/xray-revert.pid ] && kill "$(cat /tmp/xray-revert.pid)" 2>/dev/null
+rm -f /tmp/xray-revert.pid
+
+# nftables-Tabelle entfernen
+nft delete table inet xray 2>/dev/null
+
+# Policy-Routing entfernen
+ip rule del fwmark $MARK lookup $TABLE 2>/dev/null
+ip route flush table $TABLE 2>/dev/null
+
+# Xray stoppen + Autostart aus (Default: nicht permanent)
+/etc/init.d/xray stop 2>/dev/null
+/etc/init.d/xray disable 2>/dev/null
+
+echo "xray-off: Tunnel AUS, Traffic direkt (fail-safe)."

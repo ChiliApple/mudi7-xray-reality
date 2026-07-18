@@ -1,0 +1,60 @@
+#!/usr/sbin/nft -f
+# xray-tproxy.nft — TPROXY-Regeln fuer Xray-core (OpenWrt 23.05 / firewall4-kompatibel)
+#
+# SICHERHEIT:
+#  - KEIN 'flush ruleset' -> die fw4-Tabelle wird NICHT angefasst.
+#  - Nur eigene Tabelle 'inet xray'. Entfernen mit: nft delete table inet xray
+#  - 'fib daddr type local return' schuetzt ALLES an den Router selbst
+#    (SSH, DNS, der Xray-Rueckweg) -> wird nie getunnelt.
+#
+# Wird von scripts/setup-tproxy.sh aus __SERVER_ADDRESS__ gerendert nach
+# /etc/xray/xray-tproxy.nft
+
+table inet xray {
+
+    # Netze, die NICHT getunnelt werden (direkt raus)
+    set bypass4 {
+        type ipv4_addr
+        flags interval
+        elements = {
+            0.0.0.0/8,
+            10.0.0.0/8,
+            100.64.0.0/10,
+            127.0.0.0/8,
+            169.254.0.0/16,
+            172.16.0.0/12,
+            192.168.0.0/16,
+            224.0.0.0/4,
+            240.0.0.0/4,
+            255.255.255.255/32,
+            __SERVER_ADDRESS__/32
+        }
+    }
+
+    chain prerouting {
+        type filter hook prerouting priority mangle; policy accept;
+
+        # Etablierte transparente Sockets direkt annehmen (noetig fuer TCP-Reply-Pakete)
+        meta l4proto { tcp, udp } socket transparent 1 meta mark set 0x1 accept
+
+        # Alles an den Router selbst -> niemals tproxyen (schuetzt SSH/DNS/Xray-Rueckweg)
+        fib daddr type local return
+
+        # Private/reservierte Netze + Server-IP -> direkt
+        ip daddr @bypass4 return
+
+        # Rest: an lokalen Xray-TPROXY-Port umleiten
+        meta l4proto tcp meta mark set 0x1 tproxy ip to 127.0.0.1:12345 accept
+        meta l4proto udp meta mark set 0x1 tproxy ip to 127.0.0.1:12345 accept
+    }
+
+    chain prerouting6 {
+        type filter hook prerouting priority mangle; policy accept;
+
+        # IPv6-Leak verhindern: an Router selbst + link-local/ULA/multicast durchlassen,
+        # geforwardetes public-IPv6 droppen -> Clients fallen auf IPv4 (Tunnel) zurueck.
+        fib daddr type local return
+        ip6 daddr { ::1/128, fe80::/10, fc00::/7, ff00::/8 } return
+        meta l4proto { tcp, udp } drop
+    }
+}
