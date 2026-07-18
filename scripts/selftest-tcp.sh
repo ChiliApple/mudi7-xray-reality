@@ -1,27 +1,37 @@
 #!/bin/sh
-# selftest-tcp.sh — isolierter TCP-Test durch tun0 (Port 80, verbose) + tun2socks-Debug.
+# selftest-tcp.sh v2 — TCP-Test durch tun0 mit Xray-debug + tun2socks-debug + SOCKS-conns.
 set -u
+CFG=/etc/xray/config.json
 echo "== Vorbereitung =="
 xray-off >/dev/null 2>&1; killall tun2socks 2>/dev/null; sleep 1
-/etc/init.d/xray start >/dev/null 2>&1; sleep 2
+cp "$CFG" /tmp/config.json.bak
+sed -i 's/"loglevel": *"[a-z]*"/"loglevel": "debug"/' "$CFG"
+/etc/init.d/xray restart >/dev/null 2>&1; sleep 2
 
-echo "== tun0 (MTU 1280) =="
+echo "== tun0 + tun2socks (debug) =="
 ip tuntap add mode tun dev tun0 2>/dev/null
 ip addr add 198.18.0.1/15 dev tun0 2>/dev/null
 ip link set dev tun0 up; ip link set dev tun0 mtu 1280
 /usr/bin/tun2socks -device tun0 -proxy socks5://127.0.0.1:10808 -loglevel debug > /tmp/t2s.log 2>&1 &
 T=$!; sleep 2
 
-echo "== TCP-Test durch tun0: http://1.1.1.1 (Port 80, kein TLS), verbose =="
+echo "== TCP-Test http://1.1.1.1 (Port 80) =="
 ip route add 1.1.1.1/32 dev tun0 2>/dev/null
-curl -v --max-time 12 -o /dev/null http://1.1.1.1/ 2>&1 | grep -iE 'trying|connected|http/|timed|refused|closed|reset' | sed 's/^/  /'
+( sleep 3; echo "  [SOCKS-conns]:"; netstat -tn 2>/dev/null | grep ':10808' | sed 's/^/    /' ) &
+curl -s --max-time 10 -o /dev/null -w "  curl: code=%{http_code} time=%{time_total}s\n" http://1.1.1.1/ 2>&1
+wait
 ip route del 1.1.1.1/32 dev tun0 2>/dev/null
 sleep 1; kill "$T" 2>/dev/null
 
-echo "== tun2socks-Debug-Log =="
-tail -n 20 /tmp/t2s.log | sed 's/^/  /'
+echo "== Xray-Log: TCP zu 1.1.1.1? =="
+logread | grep -i xray | grep -iE 'tcp:1\.1\.1\.1|1\.1\.1\.1:80|dialing to tcp|tunneling request to tcp|rejected|failed' | tail -n 12 | sed 's/^/  /'
+echo "  (wenn leer: Xray hat KEINEN TCP-Connect zu 1.1.1.1 gesehen)"
 
-echo "== Aufraeumen =="
+echo "== tun2socks-Log =="
+tail -n 12 /tmp/t2s.log | sed 's/^/  /'
+
+echo "== zurueck + aufraeumen =="
+cp /tmp/config.json.bak "$CFG"
+/etc/init.d/xray stop >/dev/null 2>&1
 ip link set dev tun0 down 2>/dev/null; ip tuntap del mode tun dev tun0 2>/dev/null
-/etc/init.d/xray stop 2>/dev/null
 echo "== fertig =="
