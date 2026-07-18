@@ -49,10 +49,10 @@ log "SHA256 verifiziert gegen offizielle .dgst: $HAVE"
 # --- Entpacken + platzieren ---
 unzip -o "$TMP/xray.zip" -d "$TMP/x" >/dev/null || die "Entpacken fehlgeschlagen"
 [ -f "$TMP/x/xray" ] || die "xray-Binary nicht im Archiv gefunden"
-install -m 0755 "$TMP/x/xray" "$BIN_DEST"
+cp "$TMP/x/xray" "$BIN_DEST" && chmod 0755 "$BIN_DEST"
 mkdir -p "$ASSET_DIR"
-[ -f "$TMP/x/geoip.dat" ]   && install -m 0644 "$TMP/x/geoip.dat"   "$ASSET_DIR/" || true
-[ -f "$TMP/x/geosite.dat" ] && install -m 0644 "$TMP/x/geosite.dat" "$ASSET_DIR/" || true
+[ -f "$TMP/x/geoip.dat" ]   && cp "$TMP/x/geoip.dat"   "$ASSET_DIR/" && chmod 0644 "$ASSET_DIR/geoip.dat"   || true
+[ -f "$TMP/x/geosite.dat" ] && cp "$TMP/x/geosite.dat" "$ASSET_DIR/" && chmod 0644 "$ASSET_DIR/geosite.dat" || true
 
 VER_OUT="$("$BIN_DEST" version 2>/dev/null | head -1 || true)"
 log "Installiert: ${VER_OUT:-xray}"
@@ -88,7 +88,7 @@ else
 fi
 
 # --- procd-Service installieren + starten ---
-install -m 0755 "$INITD_SRC" /etc/init.d/xray
+cp "$INITD_SRC" /etc/init.d/xray && chmod 0755 /etc/init.d/xray
 /etc/init.d/xray enable
 /etc/init.d/xray restart
 log "Service aktiv."
