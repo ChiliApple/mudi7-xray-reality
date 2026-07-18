@@ -7,6 +7,15 @@
       "port": 10808,
       "protocol": "socks",
       "settings": { "udp": true }
+    },
+    {
+      "tag": "tproxy-in",
+      "listen": "0.0.0.0",
+      "port": 12345,
+      "protocol": "dokodemo-door",
+      "settings": { "network": "tcp,udp", "followRedirect": true },
+      "streamSettings": { "sockopt": { "tproxy": "tproxy" } },
+      "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic"], "routeOnly": true }
     }
   ],
   "outbounds": [
@@ -40,12 +49,14 @@
         "sockopt": { "mark": 255 }
       }
     },
-    { "tag": "direct", "protocol": "freedom" }
+    { "tag": "direct", "protocol": "freedom", "settings": { "domainStrategy": "UseIP" } },
+    { "tag": "block", "protocol": "blackhole" }
   ],
   "routing": {
     "domainStrategy": "AsIs",
     "rules": [
-      { "type": "field", "inboundTag": ["socks-in"], "outboundTag": "proxy" }
+      { "type": "field", "inboundTag": ["tproxy-in"], "ip": ["geoip:private"], "outboundTag": "direct" },
+      { "type": "field", "inboundTag": ["tproxy-in", "socks-in"], "outboundTag": "proxy" }
     ]
   }
 }
