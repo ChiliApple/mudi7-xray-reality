@@ -4,9 +4,6 @@ TUN=tun0
 TABLE=200
 LAN_IF=br-lan
 
-[ -f /tmp/xray-revert.pid ] && kill "$(cat /tmp/xray-revert.pid)" 2>/dev/null
-rm -f /tmp/xray-revert.pid
-
 LAN_NET="$(ip -4 route show dev "$LAN_IF" proto kernel scope link 2>/dev/null | awk '{print $1}' | head -1)"
 [ -n "$LAN_NET" ] && ip rule del from "$LAN_NET" lookup "$TABLE" pref 200 2>/dev/null
 [ -n "$LAN_NET" ] && ip rule del to "$LAN_NET" lookup main pref 100 2>/dev/null

@@ -27,7 +27,7 @@ cp "$TMP/hev" /usr/bin/hev-socks5-tunnel && chmod 0755 /usr/bin/hev-socks5-tunne
 mkdir -p /etc/hev
 cp "$REPO_ROOT/etc/hev/config.yaml" /etc/hev/config.yaml
 cp "$REPO_ROOT/etc/init.d/hev" /etc/init.d/hev && chmod 0755 /etc/init.d/hev
-for s in xray-on xray-off xray-confirm; do
+for s in xray-on xray-off; do
     cp "$REPO_ROOT/scripts/$s" "/usr/sbin/$s" && chmod 0755 "/usr/sbin/$s"
 done
 /etc/init.d/xray disable 2>/dev/null || true
