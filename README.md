@@ -20,7 +20,7 @@ A reproducible, headless setup that turns a Mudi 7 into a stealth travel router:
   into a `tun0` device and relayed through Xray's local SOCKS inbound.
 - **On-demand control**: `xray-on` enables the tunnel, `xray-off` disables it. Default after reboot: off.
 - **DNS through the tunnel** (optional helper): the router's resolver upstreams are 
-  IP-literal DoH and routed through `tun0`, so DNS exits where the tunnel exits (no leak),
+  fixed public resolvers (plain DNS) and routed through `tun0`, so DNS exits where the tunnel exits (no leak),
   while staying captive-portal-safe when the tunnel is off.
 
 ### Why hev / tun2socks instead of TPROXY
@@ -44,7 +44,7 @@ the return path for the (otherwise zone-less) tunnel interface.
 
 ```sh
 # 1) Get the repo onto the router
-curl -fL https://codeload.github.com/<you>/mudi7-xray-reality/tar.gz/refs/heads/main -o /tmp/r.tgz
+curl -fL https://codeload.github.com/ChiliApple/mudi7-xray-reality/tar.gz/refs/heads/main -o /tmp/r.tgz
 mkdir -p /tmp/repo && tar -xzf /tmp/r.tgz -C /tmp/repo && cd "$(ls -d /tmp/repo/*/ | head -1)"
 
 # 2) Create your secrets file (NOT committed) from the example and fill in your server
@@ -123,7 +123,7 @@ den Rückweg des (sonst zonenlosen) Tunnel-Interfaces.
 
 ```sh
 # 1) Repo auf den Router holen
-curl -fL https://codeload.github.com/<du>/mudi7-xray-reality/tar.gz/refs/heads/main -o /tmp/r.tgz
+curl -fL https://codeload.github.com/ChiliApple/mudi7-xray-reality/tar.gz/refs/heads/main -o /tmp/r.tgz
 mkdir -p /tmp/repo && tar -xzf /tmp/r.tgz -C /tmp/repo && cd "$(ls -d /tmp/repo/*/ | head -1)"
 
 # 2) secrets-Datei (nicht im Repo) aus dem Beispiel anlegen und Server eintragen
