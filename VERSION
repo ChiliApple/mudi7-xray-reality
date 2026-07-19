@@ -1,10 +1,10 @@
 XRAY_VERSION=v26.6.1
 
-# Xray-core gepinnt.
-# Grund fuer die Version: Der Client meldet im REALITY-Handshake seine
-# Version (hier 26.6.1). Ab xray-core 26.7.11 setzen REALITY-SERVER per
-# Default minClientVer=26.3.27 und weisen aeltere Clients ab. 26.6.1 >= 26.3.27
-# -> nimmt die Huerde nativ, ohne den Server aufweichen zu muessen.
+# Xray-core pinned.
+# Reason for this version: the client reports its version in the REALITY
+# handshake (here 26.6.1). From xray-core 26.7.11 on, REALITY SERVERS default
+# to minClientVer=26.3.27 and reject older clients. 26.6.1 >= 26.3.27
+# -> clears the bar natively, without having to weaken the server.
 #
-# Version anheben: XRAY_VERSION hier UND in scripts/install.sh aendern,
-# danach install.sh erneut ausfuehren (verifiziert SHA256 automatisch).
+# To bump: change XRAY_VERSION here AND in scripts/install.sh, then run
+# install.sh again (verifies SHA256 automatically).

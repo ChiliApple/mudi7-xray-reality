@@ -1,6 +1,6 @@
 #!/bin/sh /etc/rc.common
-# procd-Service fuer Xray-core (GL.iNet Mudi 7 / OpenWrt 23.05)
-# Wird von scripts/install.sh nach /etc/init.d/xray installiert.
+# procd service for Xray-core (GL.iNet Mudi 7 / OpenWrt 23.05)
+# Installed to /etc/init.d/xray by scripts/install.sh.
 
 START=99
 STOP=10

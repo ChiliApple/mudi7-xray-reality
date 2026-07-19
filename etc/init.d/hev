@@ -1,5 +1,5 @@
 #!/bin/sh /etc/rc.common
-# procd-Service fuer hev-socks5-tunnel (lwIP tun2socks -> Xray-SOCKS 10808)
+# procd service for hev-socks5-tunnel (lwIP tun2socks -> Xray SOCKS 10808)
 START=99
 STOP=10
 USE_PROCD=1

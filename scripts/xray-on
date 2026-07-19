@@ -1,39 +1,39 @@
 #!/bin/sh
-# xray-on — Tunnel EIN (hev-socks5-tunnel): Xray + hev starten, Client-Traffic ueber tun0.
-# Auto-Revert nach AUTOREVERT s, ausser 'xray-confirm'.
+# xray-on — tunnel ON (hev-socks5-tunnel): start Xray + hev, route client traffic via tun0.
+# Stays on until xray-off.
 set -u
 TUN=tun0
 TABLE=200
 LAN_IF=br-lan
 
-[ -x /usr/bin/hev-socks5-tunnel ] || { echo "xray-on: hev fehlt -> erst 'sh scripts/install-hev.sh'"; exit 1; }
+[ -x /usr/bin/hev-socks5-tunnel ] || { echo "xray-on: hev missing -> run 'sh scripts/install-hev.sh' first"; exit 1; }
 
 LAN_NET="$(ip -4 route show dev "$LAN_IF" proto kernel scope link 2>/dev/null | awk '{print $1}' | head -1)"
-[ -n "$LAN_NET" ] || { echo "xray-on: LAN-Subnetz auf $LAN_IF nicht gefunden"; exit 1; }
+[ -n "$LAN_NET" ] || { echo "xray-on: LAN subnet on $LAN_IF not found"; exit 1; }
 
-# evtl. altes tun0 wegraeumen (hev legt es frisch an)
+# clean up any stale tun0 (hev creates it fresh)
 ip link show "$TUN" >/dev/null 2>&1 && ip tuntap del mode tun dev "$TUN" 2>/dev/null
 
-# Dienste starten (hev erzeugt tun0 aus /etc/hev/config.yaml)
+# start services (hev creates tun0 from /etc/hev/config.yaml)
 /etc/init.d/xray stop 2>/dev/null; /etc/init.d/xray start
-# auf Xray-SOCKS-Listener warten, bevor hev startet
+# wait for the Xray SOCKS listener before starting hev
 i=0; while [ $i -lt 30 ]; do netstat -lnt 2>/dev/null | grep -q "127.0.0.1:10808" && break; sleep 0.3; i=$((i+1)); done
 /etc/init.d/hev stop 2>/dev/null; /etc/init.d/hev start
 
-# auf tun0 warten
+# wait for tun0
 i=0; while [ $i -lt 25 ]; do ip link show "$TUN" >/dev/null 2>&1 && break; sleep 0.2; i=$((i+1)); done
-ip link show "$TUN" >/dev/null 2>&1 || { echo "xray-on: tun0 kam nicht hoch -> Rollback"; /usr/sbin/xray-off; exit 1; }
+ip link show "$TUN" >/dev/null 2>&1 || { echo "xray-on: tun0 did not come up -> rollback"; /usr/sbin/xray-off; exit 1; }
 
-# Policy-Routing: LAN-Clients -> tun0; LAN-Ziele bleiben direkt
+# policy routing: LAN clients -> tun0; LAN destinations stay direct
 ip route replace default dev "$TUN" table "$TABLE"
 ip rule add to "$LAN_NET" lookup main pref 100 2>/dev/null
 ip rule add from "$LAN_NET" lookup "$TABLE" pref 200 2>/dev/null
 
-# --- DNS durch den Tunnel: feste Upstream-IPs ueber tun0 (kein DNS-Leak) ---
-# (Fuer andere Setups anpassbar; passt zu IP-fixierten DoH 1.1.1.1 + 9.9.9.9)
+# --- DNS through the tunnel: pin upstream IPs via tun0 (no DNS leak) ---
+# (adjustable for other setups; matches IP-literal DoH 1.1.1.1 + 9.9.9.9)
 DNS_IPS="1.1.1.1 1.0.0.1 9.9.9.9 149.112.112.112"
 for dip in $DNS_IPS; do ip route add "$dip/32" dev "$TUN" 2>/dev/null; done
-# AdGuard nudgen -> DoH-Verbindungen frisch durch den Tunnel aufbauen
+# nudge AdGuard -> rebuild DoH connections fresh through the tunnel
 for c in $(ls /etc/init.d/ 2>/dev/null | grep -i guard); do /etc/init.d/"$c" restart >/dev/null 2>&1; break; done
 
-echo "xray-on: Tunnel AKTIV (LAN $LAN_NET -> tun0[hev] -> SOCKS -> REALITY)."
+echo "xray-on: tunnel ACTIVE (LAN $LAN_NET -> tun0[hev] -> SOCKS -> REALITY)."

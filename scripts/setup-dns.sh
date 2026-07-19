@@ -1,10 +1,10 @@
 #!/bin/sh
-# setup-dns.sh — AdGuard-Upstreams auf IP-fixierte DoH umstellen.
-# Captive-Portal-sicher: Tunnel aus -> DoH direkt; Tunnel an -> dieselben IPs via tun0 (kein Leak).
+# setup-dns.sh — switch AdGuard upstreams to IP-literal DoH.
+# Captive-portal-safe: tunnel off -> DoH direct; tunnel on -> same IPs via tun0 (no leak).
 set -u
 CFG=/etc/AdGuardHome/config.yaml
 log(){ echo "[dns] $*"; }
-[ -f "$CFG" ] || { echo "[dns][FEHLER] $CFG nicht gefunden"; exit 1; }
+[ -f "$CFG" ] || { echo "[dns][ERROR] $CFG not found"; exit 1; }
 
 cp "$CFG" "$CFG.bak.$(date +%Y%m%d-%H%M%S)"
 log "Backup: $CFG.bak.*"
@@ -16,17 +16,17 @@ b!="" && /^    - / {next}
 b!="" && !/^    - / {b=""}
 {print}
 ' "$CFG" > "$CFG.new" && mv "$CFG.new" "$CFG"
-log "upstream_dns -> IP-fixierte DoH (1.1.1.1, 9.9.9.9); fallback_dns -> 1.1.1.1, 9.9.9.9"
-log "(bootstrap_dns unveraendert)"
+log "upstream_dns -> IP-literal DoH (1.1.1.1, 9.9.9.9); fallback_dns -> 1.1.1.1, 9.9.9.9"
+log "(bootstrap_dns unchanged)"
 
-echo "--- neue Werte ---"
+echo "--- new values ---"
 sed -n '/upstream_dns:/,/upstream_mode/p' "$CFG"
 
 SVC=""
 for c in $(ls /etc/init.d/ 2>/dev/null | grep -i guard); do SVC=$c; break; done
 if [ -n "$SVC" ]; then
-    /etc/init.d/"$SVC" restart >/dev/null 2>&1 && log "AdGuard-Service '$SVC' neu gestartet."
+    /etc/init.d/"$SVC" restart >/dev/null 2>&1 && log "AdGuard service '$SVC' restarted."
 else
-    log "WARN: kein AdGuard-Init unter /etc/init.d gefunden."
+    log "WARN: no AdGuard init found under /etc/init.d."
 fi
-echo "AGH_SERVICE=${SVC:-UNBEKANNT}"
+echo "AGH_SERVICE=${SVC:-UNKNOWN}"

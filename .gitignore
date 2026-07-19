@@ -1,4 +1,4 @@
-# NIEMALS Secrets ins Repo!
+# NEVER commit secrets to the repo!
 secrets.env
 /etc/xray/secrets.env
 *.log
