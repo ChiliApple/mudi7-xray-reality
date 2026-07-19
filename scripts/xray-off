@@ -19,4 +19,6 @@ ip route flush table 100 2>/dev/null
 
 # tun0 raeumt hev selbst ab; Rest sicherheitshalber
 ip link show "$TUN" >/dev/null 2>&1 && { ip link set "$TUN" down 2>/dev/null; ip tuntap del mode tun dev "$TUN" 2>/dev/null; }
+# --- DNS: AdGuard nudgen, damit DoH wieder DIREKT geht (Captive-Portal-faehig) ---
+for c in $(ls /etc/init.d/ 2>/dev/null | grep -i guard); do /etc/init.d/"$c" restart >/dev/null 2>&1; break; done
 echo "xray-off: Tunnel AUS, Traffic direkt (fail-safe)."
