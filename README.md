@@ -19,7 +19,7 @@ A reproducible, headless setup that turns a Mudi 7 into a stealth travel router:
 - **hev-socks5-tunnel** (lwIP) as the transparent-proxy layer: LAN client traffic is policy-routed
   into a `tun0` device and relayed through Xray's local SOCKS inbound.
 - **On-demand control**: `xray-on` enables the tunnel, `xray-off` disables it. Default after reboot: off.
-- **DNS through the tunnel** (optional helper): the router's resolver upstreams are pinned to
+- **DNS through the tunnel** (optional helper): the router's resolver upstreams are 
   IP-literal DoH and routed through `tun0`, so DNS exits where the tunnel exits (no leak),
   while staying captive-portal-safe when the tunnel is off.
 
@@ -98,7 +98,7 @@ Ein reproduzierbares, headless Setup, das einen Mudi 7 in einen Stealth-Reise-Ro
 - **hev-socks5-tunnel** (lwIP) als Transparent-Proxy-Schicht: LAN-Client-Traffic wird per Policy-Routing
   in ein `tun0`-Device geleitet und über Xrays lokalen SOCKS-Inbound getunnelt.
 - **On-Demand**: `xray-on` schaltet ein, `xray-off` aus. Default nach Reboot: aus.
-- **DNS durch den Tunnel** (optionaler Helfer): Die Resolver-Upstreams werden auf IP-fixierte DoH
+- **DNS durch den Tunnel** (optionaler Helfer): Die Resolver-Upstreams werden auf feste öffentliche Resolver (Plain-DNS)
   gesetzt und über `tun0` geroutet — DNS tritt dort aus, wo der Tunnel austritt (kein Leak),
   bleibt aber im Aus-Zustand captive-portal-fähig.
 
