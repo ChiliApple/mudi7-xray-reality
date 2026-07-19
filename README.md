@@ -1,6 +1,6 @@
 # mudi7-xray-reality
 
-Transparent, DPI-resistant tunnel for a **GL.iNet Mudi 7 (GL-E5800)** travel router:
+A private, transparent tunnel for a **GL.iNet Mudi 7 (GL-E5800)** travel router — keeps your traffic private on untrusted networks:
 **Xray VLESS + REALITY + Vision** client with a **transparent proxy** (`hev-socks5-tunnel`)
 so every device on the router's Wi-Fi is tunneled automatically — no per-device apps.
 On-demand (`xray-on` / `xray-off`), default off.
