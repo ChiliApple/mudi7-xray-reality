@@ -5,6 +5,23 @@ Transparent, DPI-resistant tunnel for a **GL.iNet Mudi 7 (GL-E5800)** travel rou
 so every device on the router's Wi-Fi is tunneled automatically — no per-device apps.
 On-demand (`xray-on` / `xray-off`), default off.
 
+> ### ⚠️ Purpose & acceptable use · Zweck & zulässige Nutzung
+>
+> 🇬🇧 **This is a personal privacy tool.** It protects your own traffic on untrusted networks
+> while travelling (hotels, cruise ships, public Wi-Fi). Use it **only** on networks and services
+> that you own or are explicitly permitted to use. It is **not** intended for — and must not be
+> used for — circumventing the security controls of any network you are responsible for or do not
+> have permission to use. Built entirely from public open-source components; provided **as is, without
+> warranty**. Complying with the laws and network policies that apply to you is your responsibility.
+>
+> 🇩🇪 **Dies ist ein persönliches Privacy-Tool.** Es schützt den eigenen Traffic in nicht
+> vertrauenswürdigen Netzen auf Reisen (Hotels, Kreuzfahrtschiffe, öffentliches WLAN). Nutze es
+> **ausschließlich** in Netzen und mit Diensten, die dir gehören oder die du ausdrücklich nutzen
+> darfst. Es ist **nicht** dafür gedacht und darf **nicht** dafür verwendet werden, die
+> Sicherheitsmaßnahmen von Netzen zu umgehen, für die du verantwortlich bist oder für die du keine
+> Erlaubnis hast. Vollständig aus öffentlichen Open-Source-Komponenten; **ohne Gewährleistung**.
+> Für die Einhaltung der für dich geltenden Gesetze und Netz-Richtlinien bist du selbst verantwortlich.
+
 > 🇬🇧 English below · 🇩🇪 Deutsch weiter unten
 
 ---
