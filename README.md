@@ -97,6 +97,9 @@ sh scripts/uninstall.sh
 - Real server address / UUID / keys live **only** in `/etc/xray/secrets.env` on the device
   (git-ignored). The repo ships only `config/config.template.json` with placeholders.
 - Never commit `secrets.env`, your AdGuard config, or anything with real IPs/keys.
+- Audit the network exposure any time with `sh scripts/security-check.sh` (read-only): the
+  only listener is SOCKS on `127.0.0.1`, `hev` binds no port, and `tun0` sits in a restrictive
+  firewall zone. Nothing is exposed to the LAN or WAN.
 
 ### Known gaps
 
@@ -183,6 +186,9 @@ sh scripts/uninstall.sh
 - Echte Server-Adresse / UUID / Keys liegen **nur** in `/etc/xray/secrets.env` auf dem Gerät
   (git-ignored). Im Repo ist nur `config/config.template.json` mit Platzhaltern.
 - Niemals `secrets.env`, deine AdGuard-Config oder etwas mit echten IPs/Keys committen.
+- Angriffsfläche jederzeit prüfen mit `sh scripts/security-check.sh` (rein lesend): einziger
+  Listener ist SOCKS auf `127.0.0.1`, `hev` bindet keinen Port, und `tun0` liegt in einer
+  restriktiven Firewall-Zone. Nichts ist zum LAN oder WAN offen.
 
 ### Bekannte Lücken
 
