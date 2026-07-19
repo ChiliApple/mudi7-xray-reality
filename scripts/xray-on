@@ -1,30 +1,29 @@
 #!/bin/sh
-# xray-on — Tunnel EIN (tun2socks): Xray + tun2socks starten, Client-Traffic ueber tun0.
+# xray-on — Tunnel EIN (hev-socks5-tunnel): Xray + hev starten, Client-Traffic ueber tun0.
 # Auto-Revert nach AUTOREVERT s, ausser 'xray-confirm'.
 set -u
 AUTOREVERT=180
 TUN=tun0
-TUN_ADDR="198.18.0.1/15"
 TABLE=200
 LAN_IF=br-lan
 
-[ -x /usr/bin/tun2socks ] || { echo "xray-on: tun2socks fehlt -> erst 'sh scripts/install-tun2socks.sh'"; exit 1; }
+[ -x /usr/bin/hev-socks5-tunnel ] || { echo "xray-on: hev fehlt -> erst 'sh scripts/install-hev.sh'"; exit 1; }
 
 LAN_NET="$(ip -4 route show dev "$LAN_IF" proto kernel scope link 2>/dev/null | awk '{print $1}' | head -1)"
 [ -n "$LAN_NET" ] || { echo "xray-on: LAN-Subnetz auf $LAN_IF nicht gefunden"; exit 1; }
 
-# tun0 anlegen
-ip tuntap add mode tun dev "$TUN" 2>/dev/null
-ip addr add "$TUN_ADDR" dev "$TUN" 2>/dev/null
-ip link set dev "$TUN" up
-ip link set dev "$TUN" mtu 1280
+# evtl. altes tun0 wegraeumen (hev legt es frisch an)
+ip link show "$TUN" >/dev/null 2>&1 && ip tuntap del mode tun dev "$TUN" 2>/dev/null
 
-# Dienste
+# Dienste starten (hev erzeugt tun0 aus /etc/hev/config.yaml)
 /etc/init.d/xray stop 2>/dev/null; /etc/init.d/xray start
-/etc/init.d/tun2socks stop 2>/dev/null; /etc/init.d/tun2socks start
-sleep 1
+/etc/init.d/hev stop 2>/dev/null; /etc/init.d/hev start
 
-# Policy-Routing: LAN-Clients -> tun0; LAN-Ziele bleiben direkt (SSH/LAN-intern)
+# auf tun0 warten
+i=0; while [ $i -lt 25 ]; do ip link show "$TUN" >/dev/null 2>&1 && break; sleep 0.2; i=$((i+1)); done
+ip link show "$TUN" >/dev/null 2>&1 || { echo "xray-on: tun0 kam nicht hoch -> Rollback"; /usr/sbin/xray-off; exit 1; }
+
+# Policy-Routing: LAN-Clients -> tun0; LAN-Ziele bleiben direkt
 ip route replace default dev "$TUN" table "$TABLE"
 ip rule add to "$LAN_NET" lookup main pref 100 2>/dev/null
 ip rule add from "$LAN_NET" lookup "$TABLE" pref 200 2>/dev/null
@@ -34,5 +33,5 @@ ip rule add from "$LAN_NET" lookup "$TABLE" pref 200 2>/dev/null
 ( sleep "$AUTOREVERT" && /usr/sbin/xray-off >/tmp/xray-autorevert.log 2>&1 ) &
 echo $! > /tmp/xray-revert.pid
 
-echo "xray-on: Tunnel AKTIV (LAN $LAN_NET -> tun0 -> SOCKS -> REALITY)."
+echo "xray-on: Tunnel AKTIV (LAN $LAN_NET -> tun0[hev] -> SOCKS -> REALITY)."
 echo ">>> Auto-Revert in ${AUTOREVERT}s. Wenn alles laeuft: 'xray-confirm'."

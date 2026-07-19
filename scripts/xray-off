@@ -1,5 +1,5 @@
 #!/bin/sh
-# xray-off — Tunnel AUS: Routing + tun0 weg, Dienste stoppen. Fail-safe.
+# xray-off — Tunnel AUS: Routing weg, hev+Xray stoppen. Fail-safe.
 TUN=tun0
 TABLE=200
 LAN_IF=br-lan
@@ -11,14 +11,15 @@ LAN_NET="$(ip -4 route show dev "$LAN_IF" proto kernel scope link 2>/dev/null | 
 [ -n "$LAN_NET" ] && ip rule del from "$LAN_NET" lookup "$TABLE" pref 200 2>/dev/null
 [ -n "$LAN_NET" ] && ip rule del to "$LAN_NET" lookup main pref 100 2>/dev/null
 ip route flush table "$TABLE" 2>/dev/null
-ip link set dev "$TUN" down 2>/dev/null
-ip tuntap del mode tun dev "$TUN" 2>/dev/null
 
-# evtl. Altlasten aus TPROXY-Versuchen
+# Altlasten aus frueheren Versuchen
 nft delete table inet xray 2>/dev/null
 ip rule del fwmark 0x1 lookup 100 2>/dev/null
 ip route flush table 100 2>/dev/null
 
-/etc/init.d/tun2socks stop 2>/dev/null; /etc/init.d/tun2socks disable 2>/dev/null
+/etc/init.d/hev stop 2>/dev/null; /etc/init.d/hev disable 2>/dev/null
 /etc/init.d/xray stop 2>/dev/null; /etc/init.d/xray disable 2>/dev/null
+
+# tun0 raeumt hev selbst ab; Rest sicherheitshalber
+ip link show "$TUN" >/dev/null 2>&1 && { ip link set "$TUN" down 2>/dev/null; ip tuntap del mode tun dev "$TUN" 2>/dev/null; }
 echo "xray-off: Tunnel AUS, Traffic direkt (fail-safe)."
