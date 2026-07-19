@@ -30,7 +30,7 @@ On-demand (`xray-on` / `xray-off`), default off.
 
 ### What this is
 
-A reproducible, headless setup that turns a Mudi 7 into a stealth travel router:
+A reproducible, headless setup that turns a Mudi 7 into a private travel router:
 
 - **Xray-core** (native, statically linked) as a **VLESS+REALITY+Vision** client to your own REALITY server.
 - **hev-socks5-tunnel** (lwIP) as the transparent-proxy layer: LAN client traffic is policy-routed
@@ -116,7 +116,7 @@ See **[docs/AFTER-UPDATE.md](docs/AFTER-UPDATE.md)**.
 
 ### Was das ist
 
-Ein reproduzierbares, headless Setup, das einen Mudi 7 in einen Stealth-Reise-Router verwandelt:
+Ein reproduzierbares, headless Setup, das einen Mudi 7 in einen privaten Reise-Router verwandelt:
 
 - **Xray-core** (nativ, statisch gelinkt) als **VLESS+REALITY+Vision**-Client zu deinem eigenen REALITY-Server.
 - **hev-socks5-tunnel** (lwIP) als Transparent-Proxy-Schicht: LAN-Client-Traffic wird per Policy-Routing

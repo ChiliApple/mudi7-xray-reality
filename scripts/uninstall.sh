@@ -1,5 +1,5 @@
 #!/bin/sh
-# uninstall.sh — cleanly removes the whole stealth-tunnel stack from the router.
+# uninstall.sh — cleanly removes the whole tunnel stack from the router.
 # Returns the router to its stock state (with respect to this project).
 set -u
 log(){ echo "[uninstall] $*"; }
