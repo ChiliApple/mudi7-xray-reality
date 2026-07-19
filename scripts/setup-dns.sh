@@ -10,13 +10,13 @@ cp "$CFG" "$CFG.bak.$(date +%Y%m%d-%H%M%S)"
 log "Backup: $CFG.bak.*"
 
 awk '
-/^  upstream_dns:/ {print; print "    - https://1.1.1.1/dns-query"; print "    - https://9.9.9.9/dns-query"; b="up"; next}
+/^  upstream_dns:/ {print; print "    - 1.1.1.1"; print "    - 9.9.9.9"; b="up"; next}
 /^  fallback_dns:/ {print; print "    - 1.1.1.1"; print "    - 9.9.9.9"; b="fb"; next}
 b!="" && /^    - / {next}
 b!="" && !/^    - / {b=""}
 {print}
 ' "$CFG" > "$CFG.new" && mv "$CFG.new" "$CFG"
-log "upstream_dns -> IP-literal DoH (1.1.1.1, 9.9.9.9); fallback_dns -> 1.1.1.1, 9.9.9.9"
+log "upstream_dns -> plain DNS (1.1.1.1, 9.9.9.9) - fast; still tunneled via tun0 = no leak"
 log "(bootstrap_dns unchanged)"
 
 echo "--- new values ---"
