@@ -17,6 +17,8 @@ ip link show "$TUN" >/dev/null 2>&1 && ip tuntap del mode tun dev "$TUN" 2>/dev/
 
 # Dienste starten (hev erzeugt tun0 aus /etc/hev/config.yaml)
 /etc/init.d/xray stop 2>/dev/null; /etc/init.d/xray start
+# auf Xray-SOCKS-Listener warten, bevor hev startet
+i=0; while [ $i -lt 30 ]; do netstat -lnt 2>/dev/null | grep -q "127.0.0.1:10808" && break; sleep 0.3; i=$((i+1)); done
 /etc/init.d/hev stop 2>/dev/null; /etc/init.d/hev start
 
 # auf tun0 warten

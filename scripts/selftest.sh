@@ -3,7 +3,9 @@
 set -u
 echo "== [1] xray-on (startet hev + tun0 + routing) =="
 xray-on
-sleep 3
+# auf Xray-SOCKS warten (nach Reboot kann Xray-Start dauern)
+i=0; while [ $i -lt 30 ]; do netstat -lnt 2>/dev/null | grep -q "127.0.0.1:10808" && break; sleep 0.3; i=$((i+1)); done
+sleep 1
 
 echo "== [2] hev laeuft? =="
 pgrep -af hev-socks5-tunnel | head -1 | sed 's/^/  /' || echo "  !! hev NICHT aktiv"
