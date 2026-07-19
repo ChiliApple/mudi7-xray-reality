@@ -86,6 +86,13 @@ sh scripts/uninstall.sh
 - **IPv6** for clients is currently untunneled (blocked in the on-state to avoid leaks; refine as needed).
 - The DNS helper targets an **AdGuard Home** setup; adapt for plain dnsmasq.
 
+### Firmware updates
+
+After a GL.iNet firmware update, run `sh scripts/postupdate-check.sh` and follow its advice —
+it reports what survived and what to re-run. The `kmod-tun` kernel module (kernel-version bound)
+and your `secrets.env` (the only piece not in the repo) are the two things to watch.
+See **[docs/AFTER-UPDATE.md](docs/AFTER-UPDATE.md)**.
+
 ---
 
 ## 🇩🇪 Deutsch
@@ -164,6 +171,13 @@ sh scripts/uninstall.sh
 
 - **IPv6** der Clients ist aktuell ungetunnelt (im An-Zustand geblockt, um Leaks zu vermeiden).
 - Der DNS-Helfer zielt auf **AdGuard Home**; für reines dnsmasq anpassen.
+
+### Firmware-Updates
+
+Nach einem GL.iNet-Firmware-Update `sh scripts/postupdate-check.sh` ausführen und dem Rat folgen —
+er meldet, was überlebt hat und was neu aufzuspielen ist. Die zwei kritischen Punkte: das
+`kmod-tun`-Kernel-Modul (an die Kernel-Version gebunden) und deine `secrets.env` (das einzige Teil,
+das nicht im Repo liegt). Siehe **[docs/AFTER-UPDATE.md](docs/AFTER-UPDATE.md)**.
 
 ---
 
