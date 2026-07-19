@@ -38,7 +38,7 @@ LANZONE="$(uci show firewall 2>/dev/null | sed -n "s/.*\.name='"'"'\(lan\)'"'"'/
 uci -q delete firewall.vpntun
 uci set firewall.vpntun=zone
 uci set firewall.vpntun.name='vpntun'
-uci set firewall.vpntun.input='ACCEPT'
+uci set firewall.vpntun.input='REJECT'
 uci set firewall.vpntun.output='ACCEPT'
 uci set firewall.vpntun.forward='ACCEPT'
 uci set firewall.vpntun.masq='1'
