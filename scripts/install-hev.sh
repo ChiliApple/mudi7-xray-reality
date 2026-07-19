@@ -32,4 +32,23 @@ for s in xray-on xray-off xray-confirm; do
 done
 /etc/init.d/xray disable 2>/dev/null || true
 /etc/init.d/hev disable 2>/dev/null || true
+
+# --- Firewall-Zone fuer tun0 (noetig, sonst verwirft fw4 den Rueckweg) ---
+LANZONE="$(uci show firewall 2>/dev/null | sed -n "s/.*\.name='"'"'\(lan\)'"'"'/\1/p" | head -1)"; [ -n "$LANZONE" ] || LANZONE=lan
+uci -q delete firewall.vpntun
+uci set firewall.vpntun=zone
+uci set firewall.vpntun.name='vpntun'
+uci set firewall.vpntun.input='ACCEPT'
+uci set firewall.vpntun.output='ACCEPT'
+uci set firewall.vpntun.forward='ACCEPT'
+uci set firewall.vpntun.masq='1'
+uci set firewall.vpntun.mtu_fix='1'
+uci add_list firewall.vpntun.device='tun0'
+uci -q delete firewall.lan_vpntun
+uci set firewall.lan_vpntun=forwarding
+uci set firewall.lan_vpntun.src="$LANZONE"
+uci set firewall.lan_vpntun.dest='vpntun'
+uci commit firewall
+fw4 reload >/dev/null 2>&1
+log "Firewall-Zone 'vpntun' fuer tun0 eingerichtet (masq + mtu_fix; inert wenn Tunnel aus)."
 log "hev installiert. Default: aus. Einschalten: xray-on -> testen -> xray-confirm ; Aus: xray-off"

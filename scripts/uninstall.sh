@@ -1,31 +1,34 @@
 #!/bin/sh
-# uninstall.sh — entfernt Xray-core-Client-Setup vom Mudi 7 sauber.
-# Laesst /etc/xray/secrets.env bewusst stehen (deine Secrets) — bei Bedarf
-# manuell loeschen.
+# uninstall.sh — entfernt den kompletten Stealth-Tunnel-Stack sauber vom Mudi.
+# Bringt Router in den Auslieferungszustand zurueck (bzgl. dieses Projekts).
 set -u
+log(){ echo "[uninstall] $*"; }
 
-log() { echo "[uninstall] $*"; }
+# 1) Tunnel sicher aus
+[ -x /usr/sbin/xray-off ] && /usr/sbin/xray-off >/dev/null 2>&1
 
-# Service stoppen + deaktivieren
-if [ -f /etc/init.d/xray ]; then
-    /etc/init.d/xray stop 2>/dev/null || true
-    /etc/init.d/xray disable 2>/dev/null || true
-    rm -f /etc/init.d/xray
-    log "Service entfernt."
-fi
+# 2) Dienste stoppen + entfernen
+for svc in hev tun2socks xray; do
+    [ -f /etc/init.d/$svc ] && { /etc/init.d/$svc stop 2>/dev/null; /etc/init.d/$svc disable 2>/dev/null; rm -f /etc/init.d/$svc; }
+done
 
-# Binary + Assets
-rm -f  /usr/bin/xray
-rm -rf /usr/share/xray
-log "Binary + Assets entfernt."
+# 3) Binaries + Configs + Befehle
+rm -f /usr/bin/hev-socks5-tunnel /usr/bin/tun2socks /usr/bin/xray
+rm -rf /etc/hev /etc/xray
+rm -f /usr/sbin/xray-on /usr/sbin/xray-off /usr/sbin/xray-confirm
 
-# --- Stage-B-Reste (Transparent Proxy), falls vorhanden ---
-if command -v nft >/dev/null 2>&1; then
-    nft list table inet xray >/dev/null 2>&1 && nft delete table inet xray 2>/dev/null || true
-fi
-ip rule del fwmark 0x1 table 100 2>/dev/null || true
-ip route flush table 100 2>/dev/null || true
-log "Transparent-Proxy-Regeln (falls vorhanden) entfernt."
+# 4) Firewall-Zone entfernen
+uci -q delete firewall.vpntun
+uci -q delete firewall.lan_vpntun
+uci commit firewall
+fw4 reload >/dev/null 2>&1
 
-log "Fertig. /etc/xray/ (secrets.env, config.json) bleibt erhalten."
-log "Komplett entfernen: rm -rf /etc/xray"
+# 5) evtl. Rest-Interfaces/Regeln
+ip link show tun0 >/dev/null 2>&1 && { ip link set tun0 down 2>/dev/null; ip tuntap del mode tun dev tun0 2>/dev/null; }
+nft delete table inet xray 2>/dev/null
+ip rule del fwmark 0x1 lookup 100 2>/dev/null
+ip route flush table 100 2>/dev/null
+ip route flush table 200 2>/dev/null
+
+log "Deinstalliert. hev/xray/tun2socks + Configs + Befehle + Firewall-Zone entfernt."
+log "kmod-tun bleibt installiert (Standardmodul, schadet nicht). Bei Bedarf: opkg remove kmod-tun"
